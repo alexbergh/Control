@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  db-control:
+    image: mariadb:10.8.3-jammy
+    container_name: db-control
+    environment:
+      - MARIADB_ROOT_PASSWORD=toor
+    restart: unless-stopped
+    volumes:
+      - db-control:/var/lib/mysql
+      - ./mysql:/etc/mysql/conf.d
+    networks:
+      - control
+    ports:
+      - 3306:3306
+
+volumes:
+  db-control:
+    name: db-control
+
+networks:
+  control:
+    driver: bridge
+    name: db-control

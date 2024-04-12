@@ -1,0 +1,1 @@
+mysqldump.exe -xv control --no-data --routines --result-file=dump.sql

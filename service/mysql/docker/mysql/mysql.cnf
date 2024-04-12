@@ -1,0 +1,31 @@
+[mysqld]
+event_scheduler=ON
+performance_schema=ON
+innodb_buffer_pool_size = 512M
+innodb_buffer_pool_instances = 1
+innodb_flush_log_at_trx_commit = 2
+innodb_log_buffer_size = 32M
+innodb_max_dirty_pages_pct = 90
+innodb_file_per_table = 1
+innodb_open_files = 400
+innodb_io_capacity = 4000
+innodb_flush_method = O_DIRECT
+innodb_read_only_compressed=OFF
+max_allowed_packet = 16M
+max_binlog_size = 100M
+max_connections = 200
+max_heap_table_size = 64M
+myisam_recover_options = BACKUP
+myisam_sort_buffer_size = 256M
+query_cache_limit = 2M
+query_cache_size = 64M
+query_cache_type = 1
+query_cache_min_res_unit = 2k
+read_buffer_size = 2M
+read_rnd_buffer_size = 1M
+skip-external-locking
+sort_buffer_size = 4M
+table_open_cache = 400
+thread_cache_size = 128
+tmp_table_size = 64M
+transaction_isolation = READ-COMMITTED

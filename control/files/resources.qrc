@@ -1,0 +1,9 @@
+<RCC version="1.0">
+    <qresource prefix="icons">
+        <file alias="off_excel.png">off_excel.png</file>
+        <file alias="off_word.png">off_word.png</file>
+    </qresource>
+    <qresource prefix="images">
+        <file alias="logo.jpg">logo.jpg</file>
+    </qresource>
+</RCC>
