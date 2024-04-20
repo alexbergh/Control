@@ -1,14 +1,15 @@
+from typing import Optional
 from PySide6.QtCore import QDateTime, QObject
 
 from .db import DB
-
 
 class Issue(QObject):
     def __init__(self, id: int = 0, parent: QObject = None) -> None:
         super().__init__(parent)
 
-        assert type(id) == int
-
+        if not isinstance(id, int):
+            raise ValueError("ID must be an integer")
+        
         self.id = id
         if id:
             self._load()
@@ -16,7 +17,8 @@ class Issue(QObject):
             self._new()
 
     def _new(self):
-        self.inspection_id = ""
+        """Инициализирует новый пустой объект дела."""
+        self.inspection_id = None
         self.place = ""
         self.issue = ""
         self.repair_before = None
@@ -34,65 +36,46 @@ class Issue(QObject):
         self.confirmation_comment = ""
 
     def _load(self):
-        cursor = DB.connection().cursor(prepared=True)
-        query = """
-                SELECT *
-                FROM issue
-                WHERE id = %s
-                """
-        params = (self.id,)
+        """Загружает данные дела из базы данных по его ID."""
+        try:
+            with DB.connection().cursor() as cursor:
+                query = "SELECT * FROM issue WHERE id = %s;"
+                cursor.execute(query, (self.id,))
+                data = cursor.fetchone()
+        except Exception as e:
+            print(f"Failed to load data for issue with ID {self.id}: {e}")
+            raise
 
-        cursor.execute(query, params)
-        data = cursor.fetchone()
-        cursor.close()
+        if not data:
+            raise ValueError(f"No issue found with ID {self.id}")
 
-        self.inspection_id = str(data[1])
-        self.place = data[2]
-        self.issue = data[3]
-        self.repair_before = QDateTime(data[4])
-        self.responsible = data[5]
-        self.category = data[6]
-        self.subcategory = data[7]
-        self.measures = data[8]
-        self.repair_date = QDateTime(data[9])
-        self.repair_department = data[10]
-        self.repair_user = data[11]
-        self.repair_comment = data[12]
-        self.confirmation_date = QDateTime(data[13])
-        self.confirmation_department = data[14]
-        self.confirmation_user = data[15]
-        self.confirmation_comment = data[16]
+        attributes = [
+            'inspection_id', 'place', 'issue', 'repair_before', 'responsible',
+            'category', 'subcategory', 'measures', 'repair_date', 'repair_department',
+            'repair_user', 'repair_comment', 'confirmation_date', 'confirmation_department',
+            'confirmation_user', 'confirmation_comment'
+        ]
+        for attr, value in zip(attributes, data[1:]):  # skipping the first element as it's ID
+            setattr(self, attr, QDateTime.fromSecsSinceEpoch(value) if "date" in attr else value)
 
-    def __getitem__(self, key):
-        match key:
-            case 0:
-                return self.place
-            case 1:
-                return self.issue
-            case 2:
-                return self.responsible
-            case 3:
-                return self.repair_before
-            case 4:
-                return self.category
-            case 5:
-                return self.subcategory
-            case 6:
-                return self.measures
-            case 7:
-                if self.repair_date:
-                    repair_date = self.repair_date.toString("dd.MM.yyyy hh:mm")
-                    field = f"{repair_date}\n{self.repair_department} {self.repair_user}\n{self.repair_comment}"
-                    return field
-                return None
-            case 8:
-                if self.confirmation_date:
-                    confirmation_date = self.confirmation_date.toString("dd.MM.yyyy hh:mm")
-                    field = f"{confirmation_date}\n{self.confirmation_department} {self.confirmation_user}\n{self.confirmation_comment}"
-                    return field
-                return None
-            case _:
-                raise BaseException()
+    def __getitem__(self, key: int) -> Optional[str]:
+        """Позволяет доступ к атрибутам дела по индексу."""
+        field_map = {
+            0: self.place,
+            1: self.issue,
+            2: self.responsible,
+            3: self.repair_before.toString("dd.MM.yyyy hh:mm") if self.repair_before else None,
+            4: self.category,
+            5: self.subcategory,
+            6: self.measures,
+            7: (f"{self.repair_date.toString('dd.MM.yyyy hh:mm')}\n{self.repair_department} {self.repair_user}\n{self.repair_comment}"
+                if self.repair_date else None),
+            8: (f"{self.confirmation_date.toString('dd.MM.yyyy hh:mm')}\n{self.confirmation_department} {self.confirmation_user}\n{self.confirmation_comment}"
+                if self.confirmation_date else None)
+        }
+        return field_map.get(key, None)
 
     def date_str(self) -> str:
-        return self.date.toString("dd.MM.yyyy hh:mm")
+        """Возвращает строковое представление даты."""
+        return self.date.toString("dd.MM.yyyy hh:mm") if self.date else ""
+
