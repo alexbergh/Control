@@ -16,13 +16,13 @@
 #### Последняя доступная версия
 
 ```bash
-pipx install git+https://gitlab.com/p34ch/control
+pipx install git+https://gitlab.com/alexbergh/Control
 ```
 
 #### Установка определенной версии
 
 ```bash
-pipx install git+https://gitlab.com/p34ch/control@1.2.3
+pipx install git+https://gitlab.com/alexbergh/Control/@1.2.3
 ```
 
 ### Установка обновлений
